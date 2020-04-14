@@ -1,4 +1,4 @@
-from flask_sqlalchemy import Model, SQLAlchemy
+from flask import g
 from datetime import datetime
 import random
 import string
@@ -30,7 +30,7 @@ class Message(db.Model):
 
 
 class User(db.Model):
-    # __tablename__ = 'user'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(10), unique=True)
     key = db.Column(db.String(16))
@@ -40,6 +40,15 @@ class User(db.Model):
     messages = db.relationship('Message', back_populates='author', cascade='all')
 
     rooms = db.relationship('Room', back_populates='users', secondary=assist_table)
+
+    @classmethod
+    def create_user(cls):
+        user = cls()
+        db.session.add(user)
+        db.session.commit()
+        user.username = 'customer' + str(user.id)
+        db.session.commit()
+        return user
 
     def is_master(self, room):
         if room.master_id == self.id:
@@ -53,7 +62,7 @@ class User(db.Model):
 
 
 class Room(db.Model):
-    # __tablename__ = 'room'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(10), unique=True)
     introduce = db.Column(db.String(100))
@@ -64,6 +73,18 @@ class Room(db.Model):
     messages = db.relationship('Message', back_populates='room', cascade='all')
 
     users = db.relationship('User', back_populates='rooms', secondary=assist_table)
+
+    @classmethod  # need a auth_required decorator
+    def create_room(cls, name=None, introduce=None):
+        room = cls()
+        if name is None:
+            room.name = 'room' + str(room.id)
+        if introduce is None:
+            room.introduce = 'the master is so lazy!'
+        room.master_id = g.user.id
+        db.session.add(room)
+        db.session.commit()
+        return room
 
     def __init__(self):
         pass

@@ -30,6 +30,7 @@ class ProductionConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///'
+    # SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@127.0.0.1/test'
     WTF_CSRF_ENABLED = False
 
 
