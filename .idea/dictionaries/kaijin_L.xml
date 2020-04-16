@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="kaijin.L">
     <words>
+      <w>reqparse</w>
       <w>socketio</w>
     </words>
   </dictionary>

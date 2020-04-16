@@ -3,9 +3,9 @@ from werkzeug.http import HTTP_STATUS_CODES
 
 
 errors = {
-    "InvalidTokenError": {
-        "message": 'Invalid Token',
-        "status": 401
+    "NotFound": {
+        'message': 'resource not found',
+        'status': 404
     }
 }
 
@@ -24,9 +24,29 @@ def not_found(e):
 
 
 class InvalidTokenError(Exception):
-    pass
+
+    def __init__(self, description=None):
+        self.description = description
+        if description is None:
+            self.description = 'Invalid Token'
 
 
 def invalid(e):
     return api_abort(401, "Invalid Token")
+
+
+class InvalidAccessKey(Exception):
+    pass
+
+
+class PermissionDenied(Exception):
+    pass
+
+
+def permission_denied(e):
+    return api_abort(403, "Permission Denied")
+
+
+def invalid_key(e):
+    return api_abort(401, "Invalid access key.")
 

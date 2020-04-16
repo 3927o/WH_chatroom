@@ -2,6 +2,7 @@ from flask import g
 from datetime import datetime
 import random
 import string
+import os
 
 from chatroom.extensions import db
 
@@ -12,12 +13,12 @@ assist_table = db.Table('association',
 
 
 class Message(db.Model):
-    # __tablename__ = 'message'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.Enum('text', 'picture', 'file'))
     content = db.Column(db.String(300))  # when type is not text, it contains postfix
-    create_at = db.Column(db.DateTime, default=datetime.utcnow())
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow())
+    create_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', back_populates='messages')
@@ -27,6 +28,8 @@ class Message(db.Model):
 
     def __init__(self, content='message'):
         self.content = content
+        self.create_at = datetime.utcnow()
+        self.updated_at = self.create_at
 
 
 class User(db.Model):
@@ -34,8 +37,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(10), unique=True)
     key = db.Column(db.String(16))
-    create_at = db.Column(db.DateTime, default=datetime.utcnow())
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow())
+    create_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
     messages = db.relationship('Message', back_populates='author', cascade='all')
 
@@ -59,6 +62,8 @@ class User(db.Model):
     def __init__(self):
         # generate a 16-length random string as token key
         self.key = "".join(random.choice(string.ascii_letters + string.digits) for i in range(16))
+        self.create_at = datetime.utcnow()
+        self.updated_at = self.create_at
 
 
 class Room(db.Model):
@@ -66,8 +71,9 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(10), unique=True)
     introduce = db.Column(db.String(100))
-    create_at = db.Column(db.DateTime, default=datetime.utcnow())
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow())
+    key = db.Column(db.String(8), default="".join(random.choice(string.ascii_letters+string.digits) for i in range(12)))
+    create_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
     master_id = db.Column(db.Integer)
 
     messages = db.relationship('Message', back_populates='room', cascade='all')
@@ -77,14 +83,16 @@ class Room(db.Model):
     @classmethod  # need a auth_required decorator
     def create_room(cls, name=None, introduce=None):
         room = cls()
+        db.session.add(room)
+        db.session.commit()
         if name is None:
             room.name = 'room' + str(room.id)
         if introduce is None:
             room.introduce = 'the master is so lazy!'
         room.master_id = g.user.id
-        db.session.add(room)
         db.session.commit()
         return room
 
     def __init__(self):
-        pass
+        self.create_at = datetime.utcnow()
+        self.updated_at = self.create_at

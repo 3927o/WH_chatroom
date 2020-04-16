@@ -1,5 +1,5 @@
 from functools import wraps
-from itsdangerous import JSONWebSignatureSerializer as Serializer
+from itsdangerous import JSONWebSignatureSerializer as Serializer, BadSignature
 from flask import g, request, make_response, redirect
 
 from chatroom.models import User
@@ -21,7 +21,7 @@ def auth_required():  # 若cookie被人为更改，则无法再次登录
 def generate_token():
     new_user = User.create_user()
     s = Serializer(new_user.key)
-    data = {'name': new_user.username, 'create_at': str(new_user.create_at)}
+    data = {'create_at': str(new_user.create_at)}
     token = str(new_user.id) + '.' + s.dumps(data).decode('ascii')  # 在真正的token前加了一个用户id
     return token
 
@@ -33,8 +33,12 @@ def validate_token(token):
         raise InvalidTokenError
     token = token[len(token.split('.')[0])+1:]  # 求出真正的token
     s = Serializer(user.key)
-    data = s.loads(token)
-    if data['name'] == str(user.username) and data['create_at'] == str(user.create_at):
+    try:
+        data = s.loads(token)
+    except BadSignature:
+        return False
+    if data['create_at'] == str(user.create_at):
+        g.user = user
         return True
     return False
 
