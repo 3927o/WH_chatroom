@@ -3,8 +3,10 @@ from flask import g, request, abort
 
 from chatroom.extensions import db
 from chatroom.models import User, Room
-from chatroom.api.v1.reqparses import user_put_reqparse
-from chatroom.api.v1.schemas import user_schema, users_schema, make_resp
+from chatroom.api.v1.reqparses import user_put_reqparse, room_put_reqparse, room_post_reqparse
+from chatroom.api.v1.schemas import user_schema, users_schema, make_resp, room_schema
+from chatroom.api.v1.errors import PermissionDenied, api_abort, InvalidAccessKey
+from chatroom.api.v1.utils import get_room
 
 
 class UserAPI(Resource):
@@ -13,6 +15,7 @@ class UserAPI(Resource):
         # raise InvalidTokenError
         # from werkzeug.exceptions import NotFound
         # raise NotFound
+        # abort(404)
         # the existed exceptions in werkzeug.exceptions can not be registered to a function
         if request.args.get('user', None) is not None:
             user = User.query.get_or_404(request.args.get('user'))
@@ -22,11 +25,26 @@ class UserAPI(Resource):
             data = user_schema(user)
         return make_resp(data)
 
-    def put(self):  # sent a put request to the RoomAPI to join and leave a room
+    def put(self):
         user = g.user
         data = user_put_reqparse.parse_args()
+
         if data['username'] is not None:
+            if User.query.filter_by(username=data['username']).first() is not None:
+                return api_abort(400, 'username already exit')
             user.username = data['username']
+        if data['room_id'] is not None:
+            room = Room.query.get_or_404(data['room_id'])
+            action = data['action']
+            key = data['key']
+
+            if action == 'join' and not user.join_room(room, key):
+                raise InvalidAccessKey
+            elif action == 'leave':
+                if user.is_master(room):
+                    return api_abort(400, "the master can't leave the room")
+                user.rooms.remove(room)
+
         db.session.commit()
         return make_resp(user_schema(user))
 
@@ -47,3 +65,51 @@ class UserListAPI(Resource):
         else:
             users = User.query.all()
         return make_resp(users_schema(users, room_id))
+
+
+class RoomAPI(Resource):
+
+    def get(self, id_or_name):
+        room = get_room(id_or_name)
+        if g.user not in room.users:
+            raise PermissionDenied
+        return make_resp(room_schema(room))
+
+    def put(self, id_or_name):
+        room = get_room(id_or_name)
+        if not g.user.is_master(room):
+            raise PermissionDenied
+
+        data = room_put_reqparse.parse_args()
+        if data['name'] is not None:
+            if Room.query.filter_by(name=data['name']).first() is not None:
+                return api_abort(400, "room's name already exit")
+            room.name = data['name']
+        if data['introduce'] is not None:
+            room.introduce = data['introduce']
+        if data['key'] is not None:
+            room.key = data['key']
+        db.session.commit()
+
+        resp = room_schema(room)
+        return make_resp(resp)
+
+    def delete(self, id_or_name):
+        room = get_room(id_or_name)
+        if not g.user.is_master(room):
+            raise PermissionDenied
+        resp = room_schema(room)
+        db.session.delete(room)
+        db.session.commit()
+        return make_resp(resp)
+
+
+class RoomListAPI(Resource):
+
+    def post(self):
+        data = room_post_reqparse.parse_args()
+        if Room.query.filter_by(name=data['name']).first() is not None:
+            return api_abort(400, "room's name already exit")
+        room = Room.create_room(data['name'], data['introduce'], data['key'])
+        resp = make_resp(room_schema(room))
+        return resp

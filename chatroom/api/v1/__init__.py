@@ -5,7 +5,7 @@ from flask_cors import CORS
 from chatroom.api.v1.auth import auth_required
 from chatroom.api.v1.errors import api_abort, errors, not_found, invalid, permission_denied, invalid_key, \
     InvalidTokenError, InvalidAccessKey, PermissionDenied
-from chatroom.api.v1.resources import UserAPI, UserListAPI
+from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI
 
 
 def create_api_bp(name='api_bp'):
@@ -30,6 +30,8 @@ def register_errors(api_bp):
 def register_resources(api):
     api.add_resource(UserAPI, '/user/', endpoint='user')
     api.add_resource(UserListAPI, '/users/', endpoint='users')
+    api.add_resource(RoomAPI, '/room/<string:id_or_name>', endpoint='room')
+    api.add_resource(RoomListAPI, '/rooms/', endpoint='rooms')
 
 
 api_v1 = create_api_bp('api_v1')

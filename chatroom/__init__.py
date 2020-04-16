@@ -3,7 +3,7 @@ import os
 
 from settings import config
 from chatroom.api.v1 import api_v1
-from chatroom.extensions import socketio, db
+from chatroom.extensions import socketio, db, whooshee
 from chatroom.blueprints.resource import resource_bp
 from chatroom.blueprints.test import test
 
@@ -24,9 +24,10 @@ def creat_app(config_name=None):
 def register_extensions(app):
     db.init_app(app)
     socketio.init_app(app)
+    whooshee.init_app(app)
 
 
 def register_blueprints(app):
     app.register_blueprint(resource_bp)
-    app.register_blueprint(api_v1)
+    app.register_blueprint(api_v1, url_prefix='/api/v1')
     app.register_blueprint(test)

@@ -16,6 +16,7 @@ def auth_required():  # 若cookie被人为更改，则无法再次登录
     else:
         if not validate_token(token):
             raise InvalidTokenError
+    # 用cookies不太好，回头改用请求头, 带来好多问题
 
 
 def generate_token():

@@ -4,7 +4,7 @@ import random
 import string
 import os
 
-from chatroom.extensions import db
+from chatroom.extensions import db, whooshee
 
 
 assist_table = db.Table('association',
@@ -12,6 +12,7 @@ assist_table = db.Table('association',
                         db.Column('room_id', db.Integer, db.ForeignKey('room.id')))
 
 
+@whooshee.register_model('content')
 class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -34,7 +35,7 @@ class Message(db.Model):
 
 class User(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True)
     username = db.Column(db.String(10), unique=True)
     key = db.Column(db.String(16))
     create_at = db.Column(db.DateTime)
@@ -59,6 +60,13 @@ class User(db.Model):
         else:
             return False
 
+    def join_room(self, room, key):
+        if room.key == key:
+            self.rooms.append(room)
+            db.session.commit()
+            return True
+        return False
+
     def __init__(self):
         # generate a 16-length random string as token key
         self.key = "".join(random.choice(string.ascii_letters + string.digits) for i in range(16))
@@ -68,10 +76,10 @@ class User(db.Model):
 
 class Room(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(10), unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True)
+    name = db.Column(db.String(10), unique=True, index=True)
     introduce = db.Column(db.String(100))
-    key = db.Column(db.String(8), default="".join(random.choice(string.ascii_letters+string.digits) for i in range(12)))
+    key = db.Column(db.String(20))
     create_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
     master_id = db.Column(db.Integer)
@@ -80,16 +88,25 @@ class Room(db.Model):
 
     users = db.relationship('User', back_populates='rooms', secondary=assist_table)
 
-    @classmethod  # need a auth_required decorator
-    def create_room(cls, name=None, introduce=None):
+    @classmethod  # move to User's method
+    def create_room(cls, name=None, introduce=None, key=None):
         room = cls()
         db.session.add(room)
         db.session.commit()
         if name is None:
             room.name = 'room' + str(room.id)
+        else:
+            room.name = name
         if introduce is None:
             room.introduce = 'the master is so lazy!'
+        else:
+            room.introduce = introduce
+        if key is None:
+            room.key = "123456"
+        else:
+            room.key = key
         room.master_id = g.user.id
+        g.user.rooms.append(room)
         db.session.commit()
         return room
 

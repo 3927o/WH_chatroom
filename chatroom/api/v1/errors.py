@@ -50,3 +50,6 @@ def permission_denied(e):
 def invalid_key(e):
     return api_abort(401, "Invalid access key.")
 
+
+# def error_handler(e):
+#     return api_abort(e.code, e.detail)

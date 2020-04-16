@@ -3,6 +3,7 @@
     <words>
       <w>reqparse</w>
       <w>socketio</w>
+      <w>whooshee</w>
     </words>
   </dictionary>
 </component>
