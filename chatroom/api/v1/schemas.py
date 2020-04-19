@@ -17,6 +17,7 @@ def user_schema(user, messages=True, rooms=True, parm=False):
         'kind': 'User',
         'self': url_for('.user'),
         'username': user.username,
+        'avatar': url_for('avatar.get_user_avatar', uid=user.id),
         'create_at': str(user.create_at),
         'update_at': str(user.updated_at),
     }
@@ -48,6 +49,7 @@ def room_schema(room, user=True, message=True):
         'id': room.id,
         'name': room.name,
         'introduce': room.introduce,
+        'avatar': url_for('avatar.get_room_avatar', rid=room.id),
         'create_at': room.create_at,
         'updated_at': room.updated_at
     }

@@ -1,12 +1,12 @@
 from flask import Blueprint, send_from_directory
 from chatroom.models import Message
 
-resource_bp = Blueprint('resource_bp', __name__, static_folder='/static')
+resource_bp = Blueprint('resource_bp', __name__)
 
 
-@resource_bp.errorhandler(404)
-def not_found():
-    pass
+# @resource_bp.errorhandler(404)
+# def not_found():
+#     pass
 
 
 @resource_bp.route('/pictures/<int:pid>')

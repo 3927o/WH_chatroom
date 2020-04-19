@@ -6,6 +6,7 @@ from chatroom.api.v1 import api_v1
 from chatroom.extensions import socketio, db, whooshee
 from chatroom.blueprints.resource import resource_bp
 from chatroom.blueprints.test import test
+from chatroom.blueprints.avatars import avatar_bp
 
 
 def creat_app(config_name=None):
@@ -31,3 +32,4 @@ def register_blueprints(app):
     app.register_blueprint(resource_bp, url_prefix='/resource')
     app.register_blueprint(api_v1, url_prefix='/api/v1')
     app.register_blueprint(test)
+    app.register_blueprint(avatar_bp, url_prefix='/avatars')

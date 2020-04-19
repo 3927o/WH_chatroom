@@ -2,8 +2,8 @@ from flask import g
 from datetime import datetime
 import random
 import string
-import os
 
+from chatroom.utils import generate_avatar
 from chatroom.extensions import db, whooshee
 
 
@@ -52,6 +52,7 @@ class User(db.Model):
         db.session.add(user)
         db.session.commit()
         user.username = 'customer' + str(user.id)
+        generate_avatar(user.username, 'chatroom/static/avatars/user/{}.png'.format(user.id))
         db.session.commit()
         return user
 
@@ -115,6 +116,7 @@ class Room(db.Model):
             room.key = key
         room.master_id = g.user.id
         g.user.rooms.append(room)
+        generate_avatar(room.name, 'chatroom/static/avatars/room/{}.png'.format(room.id))
         db.session.commit()
         return room
 
