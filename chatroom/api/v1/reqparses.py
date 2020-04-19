@@ -15,3 +15,8 @@ room_post_reqparse = reqparse.RequestParser()
 room_post_reqparse.add_argument('name', type=str, location='json')
 room_post_reqparse.add_argument('introduce', type=str, location='json')
 room_post_reqparse.add_argument('key', type=str, location='json')
+
+message_post_reqparse = reqparse.RequestParser()
+message_post_reqparse.add_argument('type', choices=('text', 'file', 'picture'),
+                                   type=str, required=True)
+message_post_reqparse.add_argument('content', type=str, required=True)

@@ -21,7 +21,7 @@ def user_schema(user, messages=True, rooms=True, parm=False):
         'update_at': str(user.updated_at),
     }
     if messages is True:
-        data['messages'] = 1
+        data['messages'] = [message_schema(message_) for message_ in user.messages]
     if rooms is True:
         data['rooms'] = [room_schema(room, False, False) for room in user.rooms]
     if parm is True:
@@ -54,5 +54,33 @@ def room_schema(room, user=True, message=True):
     if user:
         data['users'] = [user_schema(user, messages=False, rooms=False) for user in room.users]
     if message:
-        data['messages'] = 1
+        data['messages'] = [message_schema(message_) for message_ in room.messages]
+    return data
+
+
+def message_schema(message):
+    data = {
+        'self': url_for('.message', mid=message.id),
+        'kind': 'Message',
+        'id': message.id,
+        'type': message.type,
+        'author': message.author.username,
+        'room': message.room.name,
+        'content': message.content,
+        'create_at': message.create_at,
+        'updated_at': message.updated_at
+    }
+    if data['type'] == 'file':
+        data['self'] = url_for('resource_bp.get_file', fid=data['id'])
+    if data['type'] == 'picture':
+        data['self'] = url_for('resource_bp.get_picture', pid=data['id'])
+
+
+def messages_schema(messages):
+    data = {
+        'self': url_for('.messages', rid=messages[0].id),
+        'kind': 'MessageList',
+        'count': len(messages),
+        'messages': [message_schema(message) for message in messages]
+    }
     return data

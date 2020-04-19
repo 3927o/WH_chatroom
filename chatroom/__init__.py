@@ -28,6 +28,6 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    app.register_blueprint(resource_bp)
+    app.register_blueprint(resource_bp, url_prefix='/resource')
     app.register_blueprint(api_v1, url_prefix='/api/v1')
     app.register_blueprint(test)

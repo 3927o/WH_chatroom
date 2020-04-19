@@ -27,7 +27,8 @@ class Message(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
     room = db.relationship('Room', back_populates='messages')
 
-    def __init__(self, content='message'):
+    def __init__(self, type_, content):
+        self.type = type_
         self.content = content
         self.create_at = datetime.utcnow()
         self.updated_at = self.create_at
@@ -66,6 +67,13 @@ class User(db.Model):
             db.session.commit()
             return True
         return False
+
+    def send_message(self, type_, content, room):
+        new_message = Message(type_, content)
+        room.messages.append(new_message)
+        self.messages.append(new_message)
+        db.session.commit()
+        return new_message
 
     def __init__(self):
         # generate a 16-length random string as token key

@@ -8,3 +8,13 @@ def get_room(id_or_name):
     except ValueError:
         room = Room.query.filter_by(name=id_or_name).first_or_404()
     return room
+
+
+def allowed_file(filename):
+    return filename.rsplit('.', 1)[1] not in ['php', 'html']
+
+
+def secure_filename(filename):
+    filename = filename.replace(' ', '_')
+    filename = filename.replace('/', '_')
+    return filename

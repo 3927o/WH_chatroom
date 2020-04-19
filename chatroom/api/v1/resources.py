@@ -1,12 +1,12 @@
 from flask_restful import Resource
-from flask import g, request, abort
+from flask import g, request
 
 from chatroom.extensions import db
-from chatroom.models import User, Room
-from chatroom.api.v1.reqparses import user_put_reqparse, room_put_reqparse, room_post_reqparse
-from chatroom.api.v1.schemas import user_schema, users_schema, make_resp, room_schema
+from chatroom.models import User, Room, Message
+from chatroom.api.v1.reqparses import user_put_reqparse, room_put_reqparse, room_post_reqparse, message_post_reqparse
+from chatroom.api.v1.schemas import user_schema, users_schema, make_resp, room_schema, message_schema, messages_schema
 from chatroom.api.v1.errors import PermissionDenied, api_abort, InvalidAccessKey
-from chatroom.api.v1.utils import get_room
+from chatroom.api.v1.utils import get_room, secure_filename, allowed_file
 
 
 class UserAPI(Resource):
@@ -113,3 +113,41 @@ class RoomListAPI(Resource):
         room = Room.create_room(data['name'], data['introduce'], data['key'])
         resp = make_resp(room_schema(room))
         return resp
+
+
+class MessageAPI(Resource):
+
+    def get(self, mid):
+        message = Message.query.get_or_404(mid)
+        if message.room not in g.user.rooms:
+            raise PermissionDenied
+        return make_resp(message_schema(message))
+
+    def delete(self, mid):
+        pass
+
+
+class MessageListAPI(Resource):
+    def get(self, rid_or_name):
+        room = get_room(rid_or_name)
+        messages = room.messages
+        if g.user not in room.users:
+            raise PermissionDenied
+        return make_resp(messages_schema(messages))
+
+    def post(self, rid_or_name):
+        room = get_room(rid_or_name)
+        data = message_post_reqparse.parse_args()
+        new_message = g.user.send_message(data['type'], data['content'], room)
+
+        if data['type'] != 'text':
+            f = request.files['file']
+            if not allowed_file(f.filename):
+                return api_abort(400, 'invalid filename')
+            filename = secure_filename(f.filename)
+            if new_message.content != filename:
+                new_message.content = filename
+                db.session.commit()
+            f.save('static/{}/{}'.format(data['type'], str(new_message.id)+'_'+filename))
+
+        return make_resp(message_schema(new_message))
