@@ -43,12 +43,20 @@ class PermissionDenied(Exception):
     pass
 
 
+class NameExistedError(Exception):
+    pass
+
+
 def permission_denied(e):
     return api_abort(403, "Permission Denied")
 
 
 def invalid_key(e):
     return api_abort(401, "Invalid access key.")
+
+
+def name_exit(e):
+    return api_abort(400, 'name already exit')
 
 
 # def error_handler(e):

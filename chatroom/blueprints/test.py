@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 # from chatroom.api.v1.auth import generate_token
 
@@ -6,6 +6,6 @@ from flask import Blueprint
 test = Blueprint('test', __name__)
 
 
-# @test.route('/')
-# def index():
-#     return generate_token()
+@test.route('/')
+def index():
+    return render_template('test.html')

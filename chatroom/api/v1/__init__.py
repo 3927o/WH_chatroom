@@ -2,16 +2,27 @@ from flask import Blueprint, abort, request
 from flask_restful import Api
 from flask_cors import CORS
 
+from chatroom.api.v1.schemas import make_resp, messages_schema
 from chatroom.api.v1.auth import auth_required
-from chatroom.api.v1.errors import api_abort, errors, not_found, invalid, permission_denied, invalid_key, \
-    InvalidTokenError, InvalidAccessKey, PermissionDenied
-from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI, MessageAPI, MessageListAPI
+from chatroom.api.v1.errors import api_abort, errors, not_found, invalid, permission_denied, invalid_key, name_exit,\
+    InvalidTokenError, InvalidAccessKey, PermissionDenied, NameExistedError
+from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI, MessageAPI, MessageListAPI, Message
 
 
 def create_api_bp(name='api_bp'):
     api_bp = Blueprint(name, __name__)
     api = Api(api_bp, errors=errors)
     CORS(api_bp)
+
+    @api_bp.route('/search')  # 换个地方
+    def search():
+        q = request.args.get('q', None)
+        if q is None:
+            return "yes"
+        messages = Message.query.whooshee_search(q).all()
+        if messages is None:
+            return "None"
+        return make_resp(messages_schema(messages))
 
     register_errors(api_bp)
     register_resources(api)
@@ -25,6 +36,7 @@ def register_errors(api_bp):
     api_bp.register_error_handler(InvalidTokenError, invalid)
     api_bp.register_error_handler(PermissionDenied, permission_denied)
     api_bp.register_error_handler(InvalidAccessKey, invalid_key)
+    api_bp.register_error_handler(NameExistedError, name_exit)
 
 
 def register_resources(api):
@@ -33,7 +45,7 @@ def register_resources(api):
     api.add_resource(RoomAPI, '/room/<string:id_or_name>', endpoint='room')
     api.add_resource(RoomListAPI, '/rooms/', endpoint='rooms')
     api.add_resource(MessageAPI, '/message/<int:mid>', endpoint='message')
-    api.add_resource(MessageListAPI, '/messages/<int:rid>', endpoint='messages')
+    api.add_resource(MessageListAPI, '/messages/<int:rid_or_name>', endpoint='messages')
 
 
 api_v1 = create_api_bp('api_v1')

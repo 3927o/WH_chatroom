@@ -1,7 +1,8 @@
-from flask import g
+from flask import g, url_for
 from datetime import datetime
 import random
 import string
+from flask_socketio import emit
 
 from chatroom.utils import generate_avatar
 from chatroom.extensions import db, whooshee
@@ -73,6 +74,7 @@ class User(db.Model):
         new_message = Message(type_, content)
         room.messages.append(new_message)
         self.messages.append(new_message)
+        db.session.add(new_message)
         db.session.commit()
         return new_message
 
@@ -123,3 +125,18 @@ class Room(db.Model):
     def __init__(self):
         self.create_at = datetime.utcnow()
         self.updated_at = self.create_at
+
+
+def update_time(target, value, oldvalue, initiator):
+    target.updated = datetime.utcnow()
+
+
+db.event.listen(Room.name, 'set', update_time)
+db.event.listen(Room.introduce, 'set', update_time)
+db.event.listen(Room.messages, 'set', update_time)
+db.event.listen(Room.users, 'set', update_time)
+db.event.listen(Room.master_id, 'set', update_time)
+db.event.listen(User.username, 'set', update_time)
+db.event.listen(User.messages, 'set', update_time)
+db.event.listen(User.rooms, 'set', update_time)
+db.event.listen(Message.content, 'set', update_time)

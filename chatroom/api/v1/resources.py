@@ -6,7 +6,7 @@ from chatroom.models import User, Room, Message
 from chatroom.api.v1.reqparses import user_put_reqparse, room_put_reqparse, room_post_reqparse, message_post_reqparse
 from chatroom.api.v1.schemas import user_schema, users_schema, make_resp, room_schema, message_schema, messages_schema
 from chatroom.api.v1.errors import PermissionDenied, api_abort, InvalidAccessKey
-from chatroom.api.v1.utils import get_room, secure_filename, allowed_file
+from chatroom.api.v1.utils import get_room, secure_filename, allowed_file, check_name
 
 
 class UserAPI(Resource):
@@ -30,8 +30,7 @@ class UserAPI(Resource):
         data = user_put_reqparse.parse_args()
 
         if data['username'] is not None:
-            if User.query.filter_by(username=data['username']).first() is not None:
-                return api_abort(400, 'username already exit')
+            check_name('user', data['username'])
             user.username = data['username']
         if data['room_id'] is not None:
             room = Room.query.get_or_404(data['room_id'])
@@ -82,8 +81,7 @@ class RoomAPI(Resource):
 
         data = room_put_reqparse.parse_args()
         if data['name'] is not None:
-            if Room.query.filter_by(name=data['name']).first() is not None:
-                return api_abort(400, "room's name already exit")
+            check_name('room', data['name'])
             room.name = data['name']
         if data['introduce'] is not None:
             room.introduce = data['introduce']

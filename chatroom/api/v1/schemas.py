@@ -80,7 +80,7 @@ def message_schema(message):
 
 def messages_schema(messages):
     data = {
-        'self': url_for('.messages', rid=messages[0].id),
+        'self': url_for('.messages', rid_or_name=messages[0].room.id),
         'kind': 'MessageList',
         'count': len(messages),
         'messages': [message_schema(message) for message in messages]
