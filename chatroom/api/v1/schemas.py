@@ -15,7 +15,7 @@ def user_schema(user, messages=True, rooms=True, parm=False):
     data = {
         'id': user.id,
         'kind': 'User',
-        'self': url_for('.user'),
+        'self': url_for('api_v1.user'),
         'username': user.username,
         'avatar': url_for('avatar.get_user_avatar', uid=user.id),
         'create_at': str(user.create_at),
@@ -26,25 +26,25 @@ def user_schema(user, messages=True, rooms=True, parm=False):
     if rooms is True:
         data['rooms'] = [room_schema(room, False, False) for room in user.rooms]
     if parm is True:
-        data['self'] = url_for('.user', user=user.id)
+        data['self'] = url_for('api_v1.user', user=user.id)
     return data
 
 
 def users_schema(users, room_id=None):
     data = {
-        'self': url_for('.users'),
+        'self': url_for('api_v1.users'),
         'kind': 'UserList',
         'count': len(users),
         'users': [user_schema(user, messages=False, rooms=False) for user in users]
     }
     if room_id is not None:
-        data['self'] = url_for('.users', room=room_id)  # the parm room is in url
+        data['self'] = url_for('api_v1.users', room=room_id)  # the parm room is in url
     return data
 
 
 def room_schema(room, user=True, message=True):
     data = {
-        'self': url_for('.room', id_or_name=room.id),
+        'self': url_for('api_v1.room', id_or_name=room.id),
         'kind': 'Room',
         'id': room.id,
         'name': room.name,
@@ -62,25 +62,26 @@ def room_schema(room, user=True, message=True):
 
 def message_schema(message):
     data = {
-        'self': url_for('.message', mid=message.id),
+        'self': url_for('api_v1.message', mid=message.id),
         'kind': 'Message',
         'id': message.id,
         'type': message.type,
         'author': message.author.username,
         'room': message.room.name,
         'content': message.content,
-        'create_at': message.create_at,
-        'updated_at': message.updated_at
+        'create_at': str(message.create_at),
+        'updated_at': str(message.updated_at)
     }
     if data['type'] == 'file':
         data['self'] = url_for('resource_bp.get_file', fid=data['id'])
     if data['type'] == 'picture':
         data['self'] = url_for('resource_bp.get_picture', pid=data['id'])
+    return data
 
 
 def messages_schema(messages):
     data = {
-        'self': url_for('.messages', rid_or_name=messages[0].room.id),
+        'self': url_for('api_v1.messages', rid_or_name=messages[0].room.id),
         'kind': 'MessageList',
         'count': len(messages),
         'messages': [message_schema(message) for message in messages]

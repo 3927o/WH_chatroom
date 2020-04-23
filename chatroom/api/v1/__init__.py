@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, g
 from flask_restful import Api
 from flask_cors import CORS
 
@@ -6,7 +6,7 @@ from chatroom.api.v1.schemas import make_resp, messages_schema
 from chatroom.api.v1.auth import auth_required
 from chatroom.api.v1.errors import api_abort, errors, not_found, invalid, permission_denied, invalid_key, name_exit,\
     InvalidTokenError, InvalidAccessKey, PermissionDenied, NameExistedError
-from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI, MessageAPI, MessageListAPI, Message
+from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI, MessageAPI, MessageListAPI, Message, Room
 
 
 def create_api_bp(name='api_bp'):
@@ -17,9 +17,13 @@ def create_api_bp(name='api_bp'):
     @api_bp.route('/search')  # 换个地方
     def search():
         q = request.args.get('q', None)
-        if q is None:
-            return "yes"
-        messages = Message.query.whooshee_search(q).all()
+        rid = request.args.get('rid', None)
+        if q is None or rid is None:
+            return api_abort(400, 'parm missing')
+        room = Room.query.get_or_404(rid)
+        if g.user not in room.users:
+            raise PermissionDenied
+        messages = Message.query.filter_by(room_id=rid).whooshee_search(q).all()
         if messages is None:
             return "None"
         return make_resp(messages_schema(messages))

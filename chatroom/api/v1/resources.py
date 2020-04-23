@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from flask import g, request
+import os
 
 from chatroom.extensions import db
 from chatroom.models import User, Room, Message
@@ -49,7 +50,10 @@ class UserAPI(Resource):
 
     def delete(self):
         user = g.user
+        if Room.query.filter_by(master_id=user.id).first() is not None:
+            return api_abort('400', 'you are the master of the room')
         data = user_schema(user)
+        os.remove('chatroom/static/avatars/user/{}.png'.format(user.id))
         db.session.delete(user)
         db.session.commit()
         return make_resp(data)
@@ -60,7 +64,10 @@ class UserListAPI(Resource):
     def get(self):
         room_id = request.args.get('room', None)
         if room_id is not None:
-            users = Room.query.get_or_404(room_id).users
+            room = Room.query.get_or_404(room_id)
+            if room not in g.user.rooms:
+                raise PermissionDenied
+            users = room.users
         else:
             users = User.query.all()
         return make_resp(users_schema(users, room_id))
@@ -97,6 +104,7 @@ class RoomAPI(Resource):
         if not g.user.is_master(room):
             raise PermissionDenied
         resp = room_schema(room)
+        os.remove('chatroom/static/avatars/room/{}.png'.format(room.id))
         db.session.delete(room)
         db.session.commit()
         return make_resp(resp)
@@ -135,6 +143,8 @@ class MessageListAPI(Resource):
 
     def post(self, rid_or_name):
         room = get_room(rid_or_name)
+        if g.user not in room.users:
+            raise PermissionDenied
         data = message_post_reqparse.parse_args()
         new_message = g.user.send_message(data['type'], data['content'], room)
 

@@ -22,7 +22,7 @@ def secure_filename(filename):
 
 
 def check_name(obj_name, name):
-    if obj_name == 'room' and Room.query.filter_by(name=name) is not None:
+    if obj_name == 'room' and Room.query.filter_by(name=name).first() is not None:
         raise NameExistedError
-    if obj_name == 'user' and User.query.filter_by(username=name) is not None:
+    if obj_name == 'user' and User.query.filter_by(username=name).first() is not None:
         raise NameExistedError

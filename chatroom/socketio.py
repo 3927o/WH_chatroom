@@ -13,18 +13,18 @@ def new_message(data):
 
 
 def _leave_room(data):
-    room = Room.query.get(int(data))
+    room = Room.query.get(int(data['id']))
     leave_room(room.name)
-    socketio_.emit('leave room', g.user.username, room=room.name)
+    socketio_.emit('leave room', data['username'], room=room.name)
 
 
 def _join_room(data):
-    room = Room.query.get(int(data))
+    room = Room.query.get(int(data['id']))
     join_room(room.name)
-    socketio_.emit('join room', g.user.username, room=room.name)
+    socketio_.emit('join room', data['username'], room=room.name)
 
 
 def delete_room(data):
     room = Room.query.get(int(data))
     close_room(room.name)
-    socketio.emit('delete room', data, room=room.name)
+    socketio_.emit('delete room', data, room=room.name)
