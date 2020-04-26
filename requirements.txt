@@ -18,7 +18,7 @@ constantly==15.1.0
 cryptography==2.8
 cssselect==1.1.0
 cycler==0.10.0
-Django==2.2.7
+Django==2.2.10
 Faker==4.0.2
 Flask==1.1.1
 Flask-Avatars==0.2.2
