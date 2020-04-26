@@ -33,17 +33,27 @@ class UserAPI(Resource):
         if data['username'] is not None:
             check_name('user', data['username'])
             user.username = data['username']
-        if data['room_id'] is not None:
-            room = Room.query.get_or_404(data['room_id'])
+        if data['action'] is not None:
             action = data['action']
-            key = data['key']
 
-            if action == 'join' and not user.join_room(room, key):
-                raise InvalidAccessKey
+            if action == 'join':
+                key = data['key']
+                name = data['name']
+                room = user.join_room(key, name)
+                if room is None:
+                    raise InvalidAccessKey
             elif action == 'leave':
+                room = Room.query.get(data['room_id'])
                 if user.is_master(room):
                     return api_abort(400, "the master can't leave the room")
+                if room not in user.rooms:
+                    return api_abort(400, "user are not in room")
                 user.rooms.remove(room)
+            else:
+                return api_abort(400, "unknown parm")
+
+            db.session.commit()
+            return make_resp(room_schema(room))
 
         db.session.commit()
         return make_resp(user_schema(user))
@@ -78,7 +88,7 @@ class RoomAPI(Resource):
     def get(self, id_or_name):
         room = get_room(id_or_name)
         if g.user not in room.users:
-            raise PermissionDenied
+            raise PermissionDenied()
         return make_resp(room_schema(room))
 
     def put(self, id_or_name):
@@ -116,6 +126,8 @@ class RoomListAPI(Resource):
         data = room_post_reqparse.parse_args()
         if Room.query.filter_by(name=data['name']).first() is not None:
             return api_abort(400, "room's name already exit")
+        if Room.query.filter_by(key=data['key']).first() is not None:
+            return api_abort(400, "key already exit")
         room = Room.create_room(data['name'], data['introduce'], data['key'])
         resp = make_resp(room_schema(room))
         return resp
@@ -129,11 +141,9 @@ class MessageAPI(Resource):
             raise PermissionDenied
         return make_resp(message_schema(message))
 
-    def delete(self, mid):
-        pass
-
 
 class MessageListAPI(Resource):
+
     def get(self, rid_or_name):
         room = get_room(rid_or_name)
         messages = room.messages

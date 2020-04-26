@@ -63,12 +63,13 @@ class User(db.Model):
         else:
             return False
 
-    def join_room(self, room, key):
-        if room.key == key:
-            self.rooms.append(room)
-            db.session.commit()
-            return True
-        return False
+    def join_room(self, key, name):
+        room = Room.query.filter_by(key=key).filter_by(name=name).first()
+        if room is None or room in self.rooms:
+            return None
+        self.rooms.append(room)
+        db.session.commit()
+        return room
 
     def send_message(self, type_, content, room):
         new_message = Message(type_, content)

@@ -6,6 +6,22 @@ errors = {
     "NotFound": {
         'message': 'resource not found',
         'status': 404
+    },
+    "InvalidTokenError": {
+        "message": "Invalid Token",
+        "status": 401
+    },
+    "InvalidAccessKey": {
+        "message": "Invalid access key.",
+        "status": 401
+    },
+    "PermissionDenied": {
+        "message": "Invalid access key.",
+        "status": 403
+    },
+    "NameExistedError": {
+        "message": "name already exit",
+        "status": 400
     }
 }
 
@@ -31,10 +47,6 @@ class InvalidTokenError(Exception):
             self.description = 'Invalid Token'
 
 
-def invalid(e):
-    return api_abort(401, "Invalid Token")
-
-
 class InvalidAccessKey(Exception):
     pass
 
@@ -58,6 +70,9 @@ def invalid_key(e):
 def name_exit(e):
     return api_abort(400, 'name already exit')
 
+
+def invalid(e):
+    return api_abort(401, "Invalid Token")
 
 # def error_handler(e):
 #     return api_abort(e.code, e.detail)

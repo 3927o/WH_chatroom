@@ -15,7 +15,7 @@ class BaseConfig:
 
     SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(16))
 
-    # SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', prefix + os.path.join(basedir, 'data.db'))
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', prefix + os.path.join(basedir, 'data.db'))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
