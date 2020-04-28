@@ -3,7 +3,7 @@ from flask_restful import Api
 from flask_cors import CORS
 
 from chatroom.api.v1.schemas import make_resp, messages_schema
-from chatroom.api.v1.auth import auth_required
+from chatroom.api.v1.auth import auth_required, generate_token
 from chatroom.api.v1.errors import api_abort, errors, not_found, invalid, permission_denied, invalid_key, name_exit,\
     InvalidTokenError, InvalidAccessKey, PermissionDenied, NameExistedError
 from chatroom.api.v1.resources import UserAPI, UserListAPI, RoomAPI, RoomListAPI, MessageAPI, MessageListAPI, Message, Room

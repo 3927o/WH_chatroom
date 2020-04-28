@@ -58,7 +58,11 @@ API写的大概可以了，除了文件上传和websocket没测试外。。。�
         "rooms": [],  #房间信息列表， 具体内容详见房间接口
         "self": "http://chatroom.mr-lin.site/api/v1/user/",  #当前资源请求链接
         "update_at": "2020-04-25 11:45:36.129983",  #更新时间
-        "username": "customer25"   #用户名
+        "username": "customer25",   #用户名
+        "phone": "2333",
+        "email": "2333@qq.com",
+        "country": "China",
+        "area": "fujian"
     },
     "message": "succeed",
     "status": 200
@@ -75,11 +79,15 @@ API写的大概可以了，除了文件上传和websocket没测试外。。。�
 
 请求URL： http://chatroom.mr-lin.site/api/v1/user
 
-请求参数： 请求参数应该在json数据中，非json中的数据不会接收
+请求参数：
 
 | 参数名   | 必须 | 类型   | 说明           |
 | -------- | ---- | ------ | -------------- |
 | username | 否   | string | 要更改的用户名 |
+| phone    | 否   | string |                |
+| email    | 否   | string |                |
+| country  | 否   | string |                |
+| area     | 否   | string |                |
 
 用户名不能重复，若重复不会返回用户数据，响应状态码不为200.
 
@@ -281,6 +289,7 @@ action为join时，key与name为必须。action为leave时，room_id为必须。
         "kind": "Room",  #资源类型
         "messages": [],  # 房间消息列表，具体内容详见message接口
         "name": "test4",  # 房间名称
+        "master_id": 1,  # 房主ID
         "self": "http://chatroom.mr-lin.site/api/v1/room/1",  # 该资源请求URL
         "updated_at": "Sat, 25 Apr 2020 12:21:59 GMT",  # 更新日期
         "users": [  # 房间用户列表
@@ -463,12 +472,12 @@ action为join时，key与name为必须。action为leave时，room_id为必须。
 {
     "data": {
         "author": "customer28",  # 作者用户名
-        "content": "test5",  # 消息内容，若消息种类为文件的话，为指向文件的URL
+        "content": "test5",  # 消息内容，若消息种类为文件的话，为文件名
         "create_at": "2020-04-25 15:04:50.753855",  # 创建日期
         "id": 1,  
         "kind": "Message", #资源种类
         "room": "test666", #房间
-        "self": "http://chatroom.mr-lin.site/api/v1/message/1",  #资源自身URL
+        "self": "http://chatroom.mr-lin.site/api/v1/message/1",  #资源自身URL，若为文件，则为文件获取url
         "type": "text",  # 消息种类(text/file/picture)
         "updated_at": "2020-04-25 15:04:50.753855"
     },
@@ -637,6 +646,8 @@ action为join时，key与name为必须。action为leave时，room_id为必须。
 房间头像：chatroom.mr-lin.site/avatars/room/room_id
 
 用户头像：chatroom.mr-lin.site/avatars/user/user_id
+
+关于修改头像：链接跟获取头像相同，只不过方法为POST，然后在表单里面带上文件就可以了。name属性应该为avatar
 
 
 

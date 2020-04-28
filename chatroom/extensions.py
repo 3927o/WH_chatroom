@@ -4,5 +4,5 @@ from flask_whooshee import Whooshee
 
 
 db = SQLAlchemy()
-socketio_ = SocketIO()
+socketio_ = SocketIO(cors_allowed_origins="*")
 whooshee = Whooshee()

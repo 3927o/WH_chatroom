@@ -39,6 +39,10 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True)
     username = db.Column(db.String(10), unique=True)
+    phone = db.Column(db.String(30), default="无")
+    email = db.Column(db.String(30), default="无")
+    country = db.Column(db.String(10), default="中国")
+    area = db.Column(db.String(10), default="北京")
     key = db.Column(db.String(16))
     create_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
@@ -91,6 +95,7 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, index=True)
     name = db.Column(db.String(10), unique=True, index=True)
     introduce = db.Column(db.String(100))
+    topic = db.Column(db.String(100))
     key = db.Column(db.String(20))
     create_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
@@ -101,7 +106,7 @@ class Room(db.Model):
     users = db.relationship('User', back_populates='rooms', secondary=assist_table)
 
     @classmethod  # move to User's method
-    def create_room(cls, name=None, introduce=None, key=None):
+    def create_room(cls, name=None, introduce="无", key="123456", topic="无"):
         room = cls()
         db.session.add(room)
         db.session.commit()
@@ -109,14 +114,9 @@ class Room(db.Model):
             room.name = 'room' + str(room.id)
         else:
             room.name = name
-        if introduce is None:
-            room.introduce = 'the master is so lazy!'
-        else:
-            room.introduce = introduce
-        if key is None:
-            room.key = "123456"
-        else:
-            room.key = key
+        room.introduce = introduce
+        room.key = key
+        room.topic = topic
         room.master_id = g.user.id
         g.user.rooms.append(room)
         generate_avatar(room.name, 'chatroom/static/avatars/room/{}.png'.format(room.id))

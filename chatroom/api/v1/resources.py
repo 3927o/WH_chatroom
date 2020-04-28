@@ -18,6 +18,7 @@ class UserAPI(Resource):
         # raise NotFound
         # abort(404)
         # the existed exceptions in werkzeug.exceptions can not be registered to a function
+        # 部署到服务器时的错误好像就跟这个一样？
         if request.args.get('user', None) is not None:
             user = User.query.get_or_404(request.args.get('user'))
             data = user_schema(user, False, False, True)
@@ -30,6 +31,14 @@ class UserAPI(Resource):
         user = g.user
         data = user_put_reqparse.parse_args()
 
+        if data['phone'] is not None:
+            user.phone = data['phone']
+        if data['email'] is not None:
+            user.phone = data['email']
+        if data['country'] is not None:
+            user.phone = data['country']
+        if data['area'] is not None:
+            user.phone = data['area']
         if data['username'] is not None:
             check_name('user', data['username'])
             user.username = data['username']
@@ -104,6 +113,8 @@ class RoomAPI(Resource):
             room.introduce = data['introduce']
         if data['key'] is not None:
             room.key = data['key']
+        if data['topic'] is not None:
+            room.topic = data['topic']
         db.session.commit()
 
         resp = room_schema(room)
@@ -126,9 +137,11 @@ class RoomListAPI(Resource):
         data = room_post_reqparse.parse_args()
         if Room.query.filter_by(name=data['name']).first() is not None:
             return api_abort(400, "room's name already exit")
-        if Room.query.filter_by(key=data['key']).first() is not None:
-            return api_abort(400, "key already exit")
-        room = Room.create_room(data['name'], data['introduce'], data['key'])
+        room = Room.create_room(data['name'], data['introduce'], data['key'], data['topic'])
+        f = request.files['avatar']
+        file = open('chatroom/static/avatars/room/{}.png'.format(room.id), 'wb')
+        file.close()
+        f.save('chatroom/static/avatars/room/{}.png'.format(room.id))
         resp = make_resp(room_schema(room))
         return resp
 
@@ -162,10 +175,10 @@ class MessageListAPI(Resource):
             f = request.files['file']
             if not allowed_file(f.filename):
                 return api_abort(400, 'invalid filename')
-            filename = secure_filename(f.filename)
+            filename = secure_filename(f.filename[0:-1])
             if new_message.content != filename:
                 new_message.content = filename
                 db.session.commit()
-            f.save('static/{}/{}'.format(data['type'], str(new_message.id)+'_'+filename))
+            f.save('chatroom/static/{}/{}'.format(data['type'], str(new_message.id)+'_'+filename))
 
         return make_resp(message_schema(new_message))

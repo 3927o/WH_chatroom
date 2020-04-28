@@ -3,20 +3,36 @@ from itsdangerous import JSONWebSignatureSerializer as Serializer, BadSignature
 from flask import g, request, make_response, redirect
 
 from chatroom.models import User
-from chatroom.api.v1.errors import InvalidTokenError
+from chatroom.api.v1.errors import InvalidTokenError, api_abort
 
 
-def auth_required():  # 若cookie被人为更改，则无法再次登录
-    token = request.cookies.get('token', None)
-    if token is None:
-        token = generate_token()
-        resp = make_response(redirect(request.url))
-        resp.set_cookie('token', token)
+# def auth_required():  # 若cookie被人为更改，则无法再次登录
+#     token = request.cookies.get('token', None)
+#     if token is None:
+#         token = generate_token()
+#         resp = make_response(redirect(request.url))
+#         # resp = make_response({"status": 200, "message": "succeed get cookies"})
+#         resp.headers['Access-Control-Allow-Origin'] = '*'
+#         resp.headers["Access-Control-Allow-Credentials"] = 'true'
+#         resp.set_cookie('token', token)
+#         return resp
+#     else:
+#         if not validate_token(token):
+#             raise InvalidTokenError
+#     # 用cookies不太好，回头改用请求头, 带来好多问题
+#     # 当初为什么要这么搞，我哭了
+#     # 我tm我是猪吗，这是什么鬼才想法
+
+def auth_required():
+    if request.method == 'OPTIONS':
+        resp = make_response("ok")
+        resp.status_code = 200
         return resp
-    else:
-        if not validate_token(token):
-            raise InvalidTokenError
-    # 用cookies不太好，回头改用请求头, 带来好多问题
+    if 'Token' not in request.headers:
+        return api_abort(401, 'Token missing.')
+    token = request.headers['Token']
+    if not validate_token(token):
+        raise InvalidTokenError
 
 
 def generate_token():

@@ -1,7 +1,7 @@
 from flask import jsonify
 from werkzeug.http import HTTP_STATUS_CODES
 
-
+# 以后手动触发错误不要这样子用了吧。。
 errors = {
     "NotFound": {
         'message': 'resource not found',
