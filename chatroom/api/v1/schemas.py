@@ -87,10 +87,18 @@ def message_schema(message):
 
 
 def messages_schema(messages):
-    data = {
-        'self': request.host_url[0:-1]+url_for('api_v1.messages', rid_or_name=messages[0].room.id),
-        'kind': 'MessageList',
-        'count': len(messages),
-        'messages': [message_schema(message) for message in messages]
-    }
+    if len(messages) == 0:
+        data = {
+            'self': request.host_url[0:-1]+url_for('api_v1.messages', rid_or_name=0),
+            'kind': 'MessageList',
+            'count': 0,
+            'messages': []
+        }
+    else:
+        data = {
+            'self': request.host_url[0:-1]+url_for('api_v1.messages', rid_or_name=messages[0].room.id),
+            'kind': 'MessageList',
+            'count': len(messages),
+            'messages': [message_schema(message) for message in messages]
+        }
     return data

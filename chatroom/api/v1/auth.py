@@ -23,6 +23,7 @@ from chatroom.api.v1.errors import InvalidTokenError, api_abort
 #     # 当初为什么要这么搞，我哭了
 #     # 我tm我是猪吗，这是什么鬼才想法
 
+
 def auth_required():
     if request.method == 'OPTIONS':
         resp = make_response("ok")
@@ -36,10 +37,10 @@ def auth_required():
 
 
 def generate_token():
-    new_user = User.create_user()
-    s = Serializer(new_user.key)
-    data = {'create_at': str(new_user.create_at)}
-    token = str(new_user.id) + '.' + s.dumps(data).decode('ascii')  # 在真正的token前加了一个用户id
+    new_user = User.create_user()  # 创建新用户
+    s = Serializer(new_user.key)  # 建立序列
+    data = {'create_at': str(new_user.create_at)}  # 加密数据集
+    token = str(new_user.id) + '.' + s.dumps(data).decode('ascii')  # 生成令牌，在真正的token前加了一个用户id
     return token
 
 

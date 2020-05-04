@@ -14,4 +14,4 @@ db.create_all()
 # 在确认请求无误返回响应前，任何数据都不能真正存储下来
 
 if __name__ == '__main__':
-    app.run('127.0.0.1', port=80, debug=True)
+    app.run('127.0.0.1', port=80, debug=False)

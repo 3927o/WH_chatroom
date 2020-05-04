@@ -12,11 +12,11 @@
     join room:<div id="join"></div>
     leave room:<div id="leave"></div>
 
-    <button onclick="socket.emit('new message', 1)">new message</button>
-    <button onclick="socket.emit('join room', {'id': '1', 'username': 'lin'})">join room1</button>
-    <button onclick="socket.emit('leave room', {'id': '1', 'username': 'lin'})">leave room1</button>
+    <button onclick="socket.emit('new_message', 1)">new message</button>
+    <button onclick="socket.emit('join_room', {'id': '1', 'username': 'lin'})">join room1</button>
+    <button onclick="socket.emit('leave_room', {'id': '1', 'username': 'lin'})">leave room1</button>
 
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 
 <script type="text/javascript" charset="utf-8">
     namespace='/'
@@ -28,13 +28,13 @@
 
     // socket.emit('new message','23333')
     
-    socket.on('new message', function(res) {
+    socket.on('new_message', function(res) {
     document.getElementById('message').innerHTML=res['content']
     });
-    socket.on('join room', function(res) {
+    socket.on('join_room', function(res) {
     document.getElementById('join').innerHTML=res
     });
-    socket.on('leave room', function(res) {
+    socket.on('leave_room', function(res) {
     document.getElementById('leave').innerHTML=res
     });
 </script>

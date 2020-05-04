@@ -10,10 +10,10 @@ from chatroom.blueprints.test import test
 from chatroom.blueprints.avatars import avatar_bp
 
 
-socketio_.on_event('new message', new_message)
-socketio_.on_event('leave room', _leave_room)
-socketio_.on_event('join room', _join_room)
-socketio_.on_event('delete room', delete_room)
+socketio_.on_event('new_message', new_message)
+socketio_.on_event('leave_room', _leave_room)
+socketio_.on_event('join_room', _join_room)
+socketio_.on_event('delete_room', delete_room)
 
 
 def creat_app(config_name=None):

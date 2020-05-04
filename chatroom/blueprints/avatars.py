@@ -8,8 +8,9 @@ def get_room_avatar(rid):
     if request.method == "GET":
         return send_from_directory('static/avatars/room', str(rid)+'.png')
     else:
-        f = request.files['avatar']
-        f.save('chatroom/static/avatars/room/{}.png'.format(rid))
+        if 'avatar' in request.files:
+            f = request.files['avatar']
+            f.save('chatroom/static/avatars/room/{}.png'.format(rid))
         return redirect(url_for('api_v1.room', id_or_name=rid))
 
 
@@ -18,6 +19,7 @@ def get_user_avatar(uid):
     if request.method == 'GET':
         return send_from_directory('static/avatars/user', str(uid)+'.png')
     else:
-        f = request.files['avatar']
-        f.save('chatroom/static/avatars/user/{}.png'.format(uid))
+        if 'avatar' in request.files:
+            f = request.files['avatar']
+            f.save('chatroom/static/avatars/user/{}.png'.format(uid))
         return redirect(url_for('api_v1.user'))

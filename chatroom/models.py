@@ -18,7 +18,7 @@ class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(db.Enum('text', 'picture', 'file'))
-    content = db.Column(db.String(300))  # when type is not text, it contains postfix
+    content = db.Column(db.String(300))
     create_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
 

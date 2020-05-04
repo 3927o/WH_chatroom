@@ -15,11 +15,11 @@ class UserAPI(Resource):
     def get(self):
         # raise InvalidTokenError
         # from werkzeug.exceptions import NotFound
-        # raise NotFound
-        # abort(404)
+        raise NotFound
+        abort(404)
         # the existed exceptions in werkzeug.exceptions can not be registered to a function
         # 部署到服务器时的错误好像就跟这个一样？
-        if request.args.get('user', None) is not None:
+        if request.args.get('user', None) is not None:  # 辅助请求其他用户信息
             user = User.query.get_or_404(request.args.get('user'))
             data = user_schema(user, False, False, True)
         else:
@@ -40,7 +40,8 @@ class UserAPI(Resource):
         if data['area'] is not None:
             user.phone = data['area']
         if data['username'] is not None:
-            check_name('user', data['username'])
+            if user.username != data['username']:
+                check_name('user', data['username'])
             user.username = data['username']
         if data['action'] is not None:
             action = data['action']
@@ -107,7 +108,8 @@ class RoomAPI(Resource):
 
         data = room_put_reqparse.parse_args()
         if data['name'] is not None:
-            check_name('room', data['name'])
+            if data['name'] != room.name:
+                check_name('room', data['name'])
             room.name = data['name']
         if data['introduce'] is not None:
             room.introduce = data['introduce']
@@ -138,10 +140,11 @@ class RoomListAPI(Resource):
         if Room.query.filter_by(name=data['name']).first() is not None:
             return api_abort(400, "room's name already exit")
         room = Room.create_room(data['name'], data['introduce'], data['key'], data['topic'])
-        f = request.files['avatar']
-        file = open('chatroom/static/avatars/room/{}.png'.format(room.id), 'wb')
-        file.close()
-        f.save('chatroom/static/avatars/room/{}.png'.format(room.id))
+        if 'avatar' in request.files:
+            f = request.files['avatar']
+            file = open('chatroom/static/avatars/room/{}.png'.format(room.id), 'wb')
+            file.close()
+            f.save('chatroom/static/avatars/room/{}.png'.format(room.id))
         resp = make_resp(room_schema(room))
         return resp
 
